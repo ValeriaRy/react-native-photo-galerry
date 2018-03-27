@@ -29,6 +29,20 @@ const styles = StyleSheet.create({
   });
 
 export default class InfoImage extends Component {
+    onPress = () => {
+        Share.share({
+            message: 'I want to show you this photo',
+            url: this.props.image.image_url[0],
+            title: 'Look at this'
+          }, {
+            // Android only:
+            dialogTitle: 'Share photo',
+            // iOS only:
+            excludedActivityTypes: [
+              'com.apple.UIKit.activity.PostToTwitter'
+            ]
+          })
+    }
 
 
   render() {
@@ -40,7 +54,10 @@ export default class InfoImage extends Component {
                 <Text style={styles.text}>{this.props.image.user.firstname} {this.props.image.user.lastname[0]}.</Text> 
                 <Text style={styles.text}>{this.props.image.camera}</Text>  
             </View> 
-            <TouchableHighlight>
+            <TouchableHighlight
+                onPress={() => this.onPress()}
+                underlayColor={'transparent'}
+            >
                 <Image 
                     style={styles.button}
                     source={ShareIcon}

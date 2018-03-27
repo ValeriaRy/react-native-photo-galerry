@@ -11,11 +11,9 @@ import {
 const { width, height } = Dimensions.get('window');
 import Carousel from 'react-native-snap-carousel';
 import InfoImage from './../Components/InfoImage';
+import ImageZoom from 'react-native-image-pan-zoom';
 
 let styles = StyleSheet.create({
-    container: {
-        justifyContent: "center",
-    },
     header: {
         backgroundColor: "blue",
         justifyContent: "center",
@@ -33,10 +31,6 @@ let styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
     },
-    image: {
-        width: width,
-        height: height * 0.4,
-    }
 });
 
 export default class FullScreenImage extends React.Component {
@@ -45,6 +39,9 @@ export default class FullScreenImage extends React.Component {
         this.state = {  
             sliderRef: null,
             image: null,
+            widthScreen: width,
+            heightScreen: height * 0.4,
+            indexOfScreen: 'portrait',
         }
     }
 
@@ -53,6 +50,8 @@ export default class FullScreenImage extends React.Component {
 
         this.setState({image: params.imagesList[params.currentImage]});
         BackHandler.addEventListener('hardwareBackPress', this.backAndroid);   
+        Dimensions.addEventListener("change", this.orientationChange);
+        this.setScreenSize(width, height);
     }
 
     backAndroid = () => {
@@ -60,8 +59,21 @@ export default class FullScreenImage extends React.Component {
         return true;
     }
 
+    orientationChange = (e) => {
+        this.setScreenSize(e.screen.width, e.screen.height); 
+    }
+
+    setScreenSize = (width, height) => {
+        if (width > height) {
+            this.setState({indexOfScreen: 'landscape', widthScreen: width, heightScreen: height});
+        } else {
+            this.setState({indexOfScreen: 'portrait', widthScreen: width, heightScreen: height * 0.4});
+        }; 
+    }
+
     componentWillUnmount() {
         BackHandler.removeEventListener('hardwareBackPress');
+        Dimensions.removeEventListener('change');
     }
 
     defineCarousel = (carousel) => {
@@ -74,10 +86,18 @@ export default class FullScreenImage extends React.Component {
     _renderItem ({item, index}) {   
         return (
             <View style={styles.slide}>
-                <Image 
-                  style={[styles.image]}
-                  source={{uri: item.image_url[0]}}
-                />
+                <ImageZoom 
+                    cropWidth={this.state.widthScreen}
+                    cropHeight={this.state.heightScreen}
+                    imageWidth={this.state.indexOfScreen === 'portrait' ? this.state.widthScreen : this.state.widthScreen / 2}
+                    imageHeight={this.state.heightScreen}
+                >
+                    <Image 
+                        style={[this.state.indexOfScreen === 'portrait' ? {width: this.state.widthScreen} : {width: this.state.widthScreen / 2},
+                            {height: this.state.heightScreen}]}
+                        source={{uri: item.image_url[0]}}
+                    />
+                </ImageZoom>
             </View>
         );
     }
@@ -90,8 +110,6 @@ export default class FullScreenImage extends React.Component {
 
     render() {
         const { params } = this.props.navigation.state;
-
-        console.log(this.state.image)
 
         return (
             <View style={{flex: 1}}>
@@ -108,8 +126,8 @@ export default class FullScreenImage extends React.Component {
                     data={params.imagesList}
                     renderItem={(item, index) => this._renderItem(item, index)}
                     firstItem={params.currentImage}
-                    sliderWidth={width}
-                    itemWidth={width}
+                    sliderWidth={this.state.widthScreen}
+                    itemWidth={this.state.widthScreen}
                     onSnapToItem={(index) => this._onSnapToItem(index)}
                 />
                 {this.state.image ? <InfoImage image={this.state.image}/> : null}

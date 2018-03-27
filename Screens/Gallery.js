@@ -13,6 +13,8 @@ import {
 const { width, height } = Dimensions.get('window');
 import * as api from './../actions/api'; 
 
+const IMAGE_SIZE_DEFAULT = 160;
+
 let styles = StyleSheet.create({
     header: {
         backgroundColor: "blue",
@@ -38,12 +40,17 @@ export default class Gallery extends React.Component {
           imagesList: [],
           refreshing: false,
           currentPage: 0,
+          indexOfScreen: 'portrait',
+          widthScreen: width,
         }
     }
 
     componentDidMount() {
         this.getItems();
         BackHandler.addEventListener('hardwareBackPress', this.backAndroid);   
+        Dimensions.addEventListener("change", this.orientationChange)
+        Expo.ScreenOrientation.allow(Expo.ScreenOrientation.Orientation.ALL);
+        this.setScreenSize(width, height);        
     }
 
     backAndroid = () => {
@@ -62,8 +69,21 @@ export default class Gallery extends React.Component {
         return true;
     }
 
+    orientationChange = (e) => {
+        this.setScreenSize(e.screen.width, e.screen.height);    
+    }
+
+    setScreenSize = (width, height) => {
+        if (width > height) {
+            this.setState({indexOfScreen: 'landscape', widthScreen: width});
+        } else {
+            this.setState({indexOfScreen: 'portrait', widthScreen: width});
+        }; 
+    }
+
     componentWillUnmount() {
         BackHandler.removeEventListener('hardwareBackPress');
+        Dimensions.removeEventListener('change');
     }
 
     _renderItem = (item) => {
@@ -74,7 +94,11 @@ export default class Gallery extends React.Component {
           >                            
               <Image 
                 source={{uri: item.item.image_url[0]}}
-                style={[{width: width / 2, height: width / 2}, styles.image]}
+                style={[this.state.indexOfScreen === 'portrait' ? 
+                    {width: this.state.widthScreen / 2, height: this.state.widthScreen / 2} : 
+                    {width: this.state.widthScreen / 4, height: this.state.widthScreen / 4}, 
+                    styles.image
+                 ]}
               />
           </TouchableHighlight>
         );
@@ -114,7 +138,8 @@ export default class Gallery extends React.Component {
                         showsVerticalScrollIndicator={false}
                         keyExtractor={this._keyExtractor}
                         horizontal={false}
-                        numColumns={2}
+                        key = {this.state.indexOfScreen === 'portrait' ? 1 : 0 }
+                        numColumns={this.state.indexOfScreen === 'portrait' ? 2 : 4}
                         renderItem={this._renderItem}
                         data={this.state.imagesList}
                         initialListSize={100}
