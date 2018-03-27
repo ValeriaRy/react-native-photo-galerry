@@ -20,7 +20,6 @@ const styles = StyleSheet.create({
       marginBottom: 20,
       flexDirection: "row",
       justifyContent: "space-between",
-      width: width,
       height: 50,
     },
     text: {
@@ -35,9 +34,7 @@ export default class InfoImage extends Component {
             url: this.props.image.image_url[0],
             title: 'Look at this'
           }, {
-            // Android only:
             dialogTitle: 'Share photo',
-            // iOS only:
             excludedActivityTypes: [
               'com.apple.UIKit.activity.PostToTwitter'
             ]
@@ -46,9 +43,8 @@ export default class InfoImage extends Component {
 
 
   render() {
-      console.log(this.props.image)
     return (
-        <View style={styles.container}> 
+        <View style={[styles.container, {width: this.props.widthScreen}]}> 
             <View>
                 <Text style={[styles.text, {fontWeight: '900'}]}>{this.props.image.name}</Text>  
                 <Text style={styles.text}>{this.props.image.user.firstname} {this.props.image.user.lastname[0]}.</Text> 

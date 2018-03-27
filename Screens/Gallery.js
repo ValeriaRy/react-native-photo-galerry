@@ -124,7 +124,7 @@ export default class Gallery extends React.Component {
     }
 
     selectPhoto = (item) => {
-        this.props.navigation.navigate('FullScreenPhoto', {imagesList: this.state.imagesList, currentImage: item.index});
+        this.props.navigation.navigate('FullScreenPhoto', {imagesList: this.state.imagesList, currentImage: item.index, orientation: this.state.indexOfScreen});
     }
 
     render() {

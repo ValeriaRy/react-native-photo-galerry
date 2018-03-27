@@ -64,7 +64,8 @@ export default class FullScreenImage extends React.Component {
     }
 
     setScreenSize = (width, height) => {
-        if (width > height) {
+        const { params } = this.props.navigation.state;
+        if (width > height || params.orientation === 'landscape') {
             this.setState({indexOfScreen: 'landscape', widthScreen: width, heightScreen: height});
         } else {
             this.setState({indexOfScreen: 'portrait', widthScreen: width, heightScreen: height * 0.4});
@@ -130,7 +131,7 @@ export default class FullScreenImage extends React.Component {
                     itemWidth={this.state.widthScreen}
                     onSnapToItem={(index) => this._onSnapToItem(index)}
                 />
-                {this.state.image ? <InfoImage image={this.state.image}/> : null}
+                {this.state.image ? <InfoImage image={this.state.image} widthScreen={this.state.widthScreen}/> : null}
             </View>
         );
     }
