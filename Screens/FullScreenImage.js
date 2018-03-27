@@ -6,12 +6,11 @@ import {
     Image, 
     TouchableHighlight, 
     Dimensions, 
-    FlatList,
     BackHandler,
-    RefreshControl,
 } from 'react-native';
 const { width, height } = Dimensions.get('window');
-import * as api from './../actions/api'; 
+import Carousel from 'react-native-snap-carousel';
+import InfoImage from './../Components/InfoImage';
 
 let styles = StyleSheet.create({
     container: {
@@ -28,16 +27,31 @@ let styles = StyleSheet.create({
         color: "white",  
         fontWeight: '600'      
     },
+    slide: {
+        flex: 1,
+        backgroundColor: 'black',
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    image: {
+        width: width,
+        height: height * 0.4,
+    }
 });
 
 export default class FullScreenImage extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {   
+        this.state = {  
+            sliderRef: null,
+            image: null,
         }
     }
 
     componentDidMount() {
+        const { params } = this.props.navigation.state;
+
+        this.setState({image: params.imagesList[params.currentImage]});
         BackHandler.addEventListener('hardwareBackPress', this.backAndroid);   
     }
 
@@ -50,9 +64,35 @@ export default class FullScreenImage extends React.Component {
         BackHandler.removeEventListener('hardwareBackPress');
     }
 
-  
+    defineCarousel = (carousel) => {
+        this._carousel = carousel; 
+        if (!this.state.sliderRef) { 
+          this.setState({sliderRef: carousel});
+        }
+    }  
+
+    _renderItem ({item, index}) {   
+        return (
+            <View style={styles.slide}>
+                <Image 
+                  style={[styles.image]}
+                  source={{uri: item.image_url[0]}}
+                />
+            </View>
+        );
+    }
+
+    _onSnapToItem(index) {
+        const { params } = this.props.navigation.state;
+
+        this.setState({image: params.imagesList[index]});
+    }
 
     render() {
+        const { params } = this.props.navigation.state;
+
+        console.log(this.state.image)
+
         return (
             <View style={{flex: 1}}>
                 <View style={styles.header}>
@@ -63,7 +103,16 @@ export default class FullScreenImage extends React.Component {
                         <Text style={styles.title}>Cancel</Text>
                     </TouchableHighlight>
                 </View>
-                <Text>No Images</Text>
+                <Carousel
+                    ref={(carousel) => this.defineCarousel(carousel)}
+                    data={params.imagesList}
+                    renderItem={(item, index) => this._renderItem(item, index)}
+                    firstItem={params.currentImage}
+                    sliderWidth={width}
+                    itemWidth={width}
+                    onSnapToItem={(index) => this._onSnapToItem(index)}
+                />
+                {this.state.image ? <InfoImage image={this.state.image}/> : null}
             </View>
         );
     }

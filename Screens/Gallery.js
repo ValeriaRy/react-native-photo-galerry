@@ -67,7 +67,6 @@ export default class Gallery extends React.Component {
     }
 
     _renderItem = (item) => {
-        console.log(item)
         return (
           <TouchableHighlight
             underlayColor={'transparent'}
@@ -85,7 +84,6 @@ export default class Gallery extends React.Component {
     
     getItems = async () => {
         let imagesQuery = await api.getImagesFromApi();
-        //console.log(imagesQuery)
         this.setState({
             imagesList: imagesQuery.photos,
             currentPage: imagesQuery.current_page
@@ -102,7 +100,7 @@ export default class Gallery extends React.Component {
     }
 
     selectPhoto = (item) => {
-        this.props.navigation.navigate('FullScreenPhoto');
+        this.props.navigation.navigate('FullScreenPhoto', {imagesList: this.state.imagesList, currentImage: item.index});
     }
 
     render() {
